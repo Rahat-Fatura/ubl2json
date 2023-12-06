@@ -1,4 +1,4 @@
 module.exports = {
-    invoice: require("./invoice"),
-    despatch: require("./despatch"),
+    invoice: require("./src/invoice"),
+    despatch: require("./src/despatch"),
 };
