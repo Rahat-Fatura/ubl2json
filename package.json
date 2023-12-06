@@ -1,0 +1,33 @@
+{
+  "name": "ubl2json",
+  "version": "1.0.0",
+  "description": "Türkiye e-Belge sistemi için kullanılan UBLTR XML formatındaki belgelerin json objesine dönüştürülmesi için kullanılan paket.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rahat-Fatura/ubl2json.git"
+  },
+  "keywords": [
+    "ubl",
+    "xml",
+    "ubltr",
+    "json",
+    "xmltojson",
+    "ubltojson",
+    "tr",
+    "ebelge",
+    "efatura",
+    "earsiv",
+    "eirsaliye"
+  ],
+  "author": "Berkay Gökçe <berkaygkc7@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Rahat-Fatura/ubl2json/issues"
+  },
+  "homepage": "https://github.com/Rahat-Fatura/ubl2json#readme",
+  "dependencies": {
+    "date-and-time": "^3.0.3",
+    "xml2js": "^0.6.2"
+  }
+}
