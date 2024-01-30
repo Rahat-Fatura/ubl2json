@@ -35,9 +35,8 @@ const linesNormalizer = (linesArray) => {
     let withholding = {};
     if (line.WithholdingTaxTotal) {
       withholding = {
-        amount: line.WithholdingTaxTotal[0]?.TaxAmount?.val || 0,
-        amount_currency: line.WithholdingTaxTotal[0]?.TaxAmount?.currencyID,
-        subtotals: taxSubtotalNormalizer(line.WithholdingTaxTotal[0]),
+        withholding_tax_total: line.WithholdingTaxTotal[0]?.TaxAmount?.val,
+        withholding_tax_subtotals: taxSubtotalNormalizer(line.WithholdingTaxTotal[0]),
       };
     }
     return {
@@ -50,12 +49,9 @@ const linesNormalizer = (linesArray) => {
       extension_amount: line.LineExtensionAmount?.val || 0,
       extension_amount_currency: line.LineExtensionAmount?.currencyID,
       allowances: allowanceChargeNormalizer(line.AllowanceCharge),
-      tax: {
-        amount: line.TaxTotal[0]?.TaxAmount?.val || 0,
-        amount_currency: line.TaxTotal[0]?.TaxAmount?.currencyID,
-        subtotals: taxSubtotalNormalizer(line.TaxTotal[0]),
-      },
-      withholding_tax: withholding,
+      tax_total: line.TaxTotal ? line.TaxTotal[0]?.TaxAmount?.val : 0,
+      tax_subtotals: taxSubtotalNormalizer(line.TaxTotal ? line.TaxTotal[0] : { TaxSubtotal: [] }),
+      ...withholding,
       additional: {
         description: line.Item[0]?.Description?.val || null,
         keyword: line.Item[0]?.Keyword?.val || null,
