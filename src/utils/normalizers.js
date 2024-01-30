@@ -85,7 +85,7 @@ const partyNormalizer = (partyJson) => {
   const normalizedParty = {
     name:
       scheme === 'TCKN'
-        ? `${party.Person?.FirstName?.val} ${party.Person?.MiddleName?.val} ${party.Person?.FamilyName?.val}`
+        ? `${party.Person?.FirstName?.val}${party.Person?.MiddleName?.val ? ` ${party.Person?.MiddleName?.val}` : ''} ${party.Person?.FamilyName?.val}`
         : party.PartyName?.Name?.val,
     vkn_tckn: ID?.val,
     tax_office: party.PartyTaxScheme?.TaxScheme?.Name?.val,
