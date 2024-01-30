@@ -72,3 +72,6 @@ yarn.lock
 update.sh
 src/prisma/*
 !src/prisma/schema.prisma
+examples
+srco
+test
