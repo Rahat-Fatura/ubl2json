@@ -26,6 +26,7 @@ const convertInvoice = async (invoice) => {
     envelope_datetime: null,
     notes: json.Note ? _.map(json.Note, (note) => note.val) : [],
     currency_code: json.DocumentCurrencyCode.val,
+    exchange_rate: json.PricingExchangeRate ? json.PricingExchangeRate.CalculationRate.val : 1,
     sender_object: normalizers.partyNormalizer(json.AccountingSupplierParty),
     sender_name: normalizers.partyNormalizer(json.AccountingSupplierParty).name,
     sender_tax: normalizers.partyNormalizer(json.AccountingSupplierParty).vkn_tckn,
