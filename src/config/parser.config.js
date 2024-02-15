@@ -67,7 +67,7 @@ const options = {
   ignoreNameSpace: true,
   alwaysCreateTextNode: true,
   textNodeName: 'val',
-  cdataPropName: '__cdata',
+  cdataPropName: '',
   ignoreDeclaration: true,
   ignorePiTags: true,
   parseAttributeValue: true,
