@@ -8,6 +8,7 @@ const taxSubtotalNormalizer = (taxTotal) => {
       percent: taxSub.Percent?.val,
       taxable: taxSub.TaxableAmount?.val,
       taxable_currency: taxSub.TaxableAmount?.currencyID,
+      tax_exemption_reason_code: taxSub.TaxCategory?.TaxExemptionReasonCode?.val,
       amount: taxSub.TaxAmount?.val,
       amount_currency: taxSub.TaxAmount?.currencyID,
     };
