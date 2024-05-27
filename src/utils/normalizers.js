@@ -43,6 +43,7 @@ const linesNormalizer = (linesArray) => {
     return {
       id: line.ID?.val,
       name: line.Item[0]?.Name?.val,
+      note: line.Note?.val,
       quantity: line.InvoicedQuantity?.val || 0,
       quantity_unit: line.InvoicedQuantity?.unitCode,
       price: line.Price.PriceAmount?.val || 0,
