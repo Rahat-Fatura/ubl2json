@@ -12,6 +12,7 @@ const convertInvoice = async (invoice) => {
     json.WithholdingTaxTotal ? json.WithholdingTaxTotal[0] : [],
   );
   const lines = normalizers.linesNormalizer(json.InvoiceLine);
+  const buyerCustomer = json.BuyerCustomerParty ? normalizers.partyNormalizer(json.BuyerCustomerParty) : null;
   const normalizedJson = {
     uuid: json.UUID.val,
     envelope_uuid: null,
@@ -49,9 +50,12 @@ const convertInvoice = async (invoice) => {
             payee_institution: payment.PayeeFinancialInstitutionBranch,
             payee_account_id: payment.PayeeFinancialAccount?.ID?.val,
             payee_account_note: payment.PayeeFinancialAccount?.PaymentNote?.val,
+            payee_currency: payment.PayeeFinancialAccount?.CurrencyCode?.val,
             payer_institution: payment.PayerFinancialInstitutionBranch,
             payer_account_id: payment.PayerFinancialAccount?.ID?.val,
             payer_account_note: payment.PayerFinancialAccount?.PaymentNote?.val,
+            payer_currency: payment.PayerFinancialAccount?.CurrencyCode?.val,
+            instruction_note: payment.InstructionNote?.val,
           };
         })
       : [],
@@ -75,9 +79,9 @@ const convertInvoice = async (invoice) => {
     receiver_object: normalizers.partyNormalizer(json.AccountingCustomerParty),
     receiver_name: normalizers.partyNormalizer(json.AccountingCustomerParty).name,
     receiver_tax: normalizers.partyNormalizer(json.AccountingCustomerParty).vkn_tckn,
-    buyer_customer_object: normalizers.partyNormalizer(json.BuyerCustomerParty),
-    buyer_customer_name: normalizers.partyNormalizer(json.BuyerCustomerParty).name,
-    buyer_customer_tax: normalizers.partyNormalizer(json.BuyerCustomerParty).vkn_tckn,
+    buyer_customer_object: buyerCustomer,
+    buyer_customer_name: buyerCustomer?.name,
+    buyer_customer_tax: buyerCustomer?.vkn_tckn,
     line_extension: json.LegalMonetaryTotal.LineExtensionAmount.val || 0,
     tax_exclusive: json.LegalMonetaryTotal.TaxExclusiveAmount.val || 0,
     tax_inclusive: json.LegalMonetaryTotal.TaxInclusiveAmount.val || 0,
