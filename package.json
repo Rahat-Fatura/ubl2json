@@ -1,6 +1,6 @@
 {
   "name": "ubl2json",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Türkiye e-Belge sistemi için kullanılan UBLTR XML formatındaki belgelerin json objesine dönüştürülmesi için kullanılan paket.",
   "main": "src/index.js",
   "repository": {
