@@ -69,6 +69,7 @@ const linesNormalizer = (linesArray) => {
         sellers_item_id: line.Item[0]?.SellersItemIdentification?.ID?.val || null,
         manufacturers_item_id: line.Item[0]?.ManufacturersItemIdentification?.ID?.val || null,
         origin_country: line.Item[0]?.OriginCountry?.val || null,
+        gtip: line.Item[0]?.Delivery?.[0]?.Shipment?.[0]?.GoodsItem?.[0]?.RequiredCustomsID?.val,
         instance:
           _.map(line.Item[0]?.ItemInstance, (instance) => {
             return {
