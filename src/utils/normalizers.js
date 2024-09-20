@@ -1,5 +1,11 @@
 const _ = require('lodash');
 
+const setDefaults = (args) => {
+  return {
+    setBuyerCustomerToReceiverForExportInvoices: args?.setBuyerCustomerToReceiverForExportInvoices || false,
+  };
+};
+
 const taxSubtotalNormalizer = (taxTotal) => {
   const taxSubtotal = _.map(taxTotal.TaxSubtotal, (taxSub) => {
     return {
@@ -82,14 +88,17 @@ const linesNormalizer = (linesArray) => {
 
 const partyNormalizer = (partyJson) => {
   const party = partyJson.Party;
-  const { ID } = _.find(party.PartyIdentification, (id) => id?.ID?.schemeID === 'TCKN' || id?.ID?.schemeID === 'VKN');
+  const { ID } = _.find(
+    party.PartyIdentification,
+    (id) => id?.ID?.schemeID === 'TCKN' || id?.ID?.schemeID === 'VKN' || id?.ID?.schemeID === 'PARTYTYPE',
+  );
   const scheme = ID.schemeID;
   const normalizedParty = {
     name:
       scheme === 'TCKN'
         ? `${party.Person?.FirstName?.val}${party.Person?.MiddleName?.val ? ` ${party.Person?.MiddleName?.val}` : ''} ${party.Person?.FamilyName?.val}`
         : party.PartyName?.Name?.val,
-    vkn_tckn: ID?.val,
+    vkn_tckn: ['TCKN', 'VKN'].includes(scheme) ? ID?.val : party.PartyLegalEntity[0]?.CompanyID?.val,
     tax_office: party.PartyTaxScheme?.TaxScheme?.Name?.val,
     address: `${party.PostalAddress?.StreetName?.val} ${party.PostalAddress?.BuildingName?.val} ${party.PostalAddress?.BuildingNumber ? party.PostalAddress?.BuildingNumber[0]?.val : null} ${party.PostalAddress?.Room?.val}`,
     city: party.PostalAddress?.CityName?.val,
@@ -112,6 +121,7 @@ const partyNormalizer = (partyJson) => {
 };
 
 module.exports = {
+  setDefaults,
   taxSubtotalNormalizer,
   allowanceChargeNormalizer,
   linesNormalizer,

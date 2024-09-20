@@ -5,7 +5,7 @@ const options = require('../config/parser.config');
 const normalizers = require('../utils/normalizers');
 const CustomError = require('../utils/customError');
 
-const convertInvoice = async (invoice) => {
+const convertInvoice = async (invoice, { setBuyerCustomerToReceiverForExportInvoices }) => {
   const json = invoice.Invoice;
   const taxSubtotals = normalizers.taxSubtotalNormalizer(json.TaxTotal[0]);
   const withholdingTaxSubtotals = normalizers.taxSubtotalNormalizer(
@@ -94,6 +94,18 @@ const convertInvoice = async (invoice) => {
     payable_amount: json.LegalMonetaryTotal.PayableAmount?.val || 0,
     lines,
   };
+  if (
+    setBuyerCustomerToReceiverForExportInvoices &&
+    normalizedJson.profile_id === 'IHRACAT' &&
+    normalizedJson.buyer_customer_object
+  ) {
+    normalizedJson.receiver_object = normalizedJson.buyer_customer_object;
+    normalizedJson.receiver_name = normalizedJson.buyer_customer_name;
+    normalizedJson.receiver_tax = normalizedJson.buyer_customer_tax;
+    normalizedJson.buyer_customer_object = undefined;
+    normalizedJson.buyer_customer_name = undefined;
+    normalizedJson.buyer_customer_tax = undefined;
+  }
   return normalizedJson;
 };
 
@@ -115,10 +127,12 @@ const rawJson = async (xml) => {
   }
 };
 
-const convertedJson = async (xml) => {
+const convertedJson = async (xml, args) => {
+  // eslint-disable-next-line no-param-reassign
+  args = normalizers.setDefaults(args);
   try {
     const jsonObj = await convertToJson(xml);
-    const invoice = await convertInvoice(jsonObj);
+    const invoice = await convertInvoice(jsonObj, args);
     return invoice;
   } catch (error) {
     throw new CustomError({
