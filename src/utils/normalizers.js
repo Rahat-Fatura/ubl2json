@@ -61,7 +61,7 @@ const linesNormalizer = (linesArray) => {
       tax_subtotals: taxSubtotalNormalizer(line.TaxTotal ? line.TaxTotal[0] : { TaxSubtotal: [] }),
       ...withholding,
       additional: {
-        description: line.Item[0]?.Description?.val || null,
+        description: line.Item[0]?.Description?.[0]?.val || null,
         keyword: line.Item[0]?.Keyword?.val || null,
         brand_name: line.Item[0]?.BrandName?.val || null,
         model_name: line.Item[0]?.ModelName?.val || null,
