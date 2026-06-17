@@ -25,7 +25,7 @@ const convertInvoice = async (invoice, { setBuyerCustomerToReceiverForExportInvo
       true,
     ),
     envelope_datetime: null,
-    notes: json.Note ? _.map(json.Note, (note) => note.val) : [],
+    notes: json.Note ? _.map(json.Note, (note) => String(note.val)) : [],
     despatches: _.isArray(json.DespatchDocumentReference)
       ? _.map(json.DespatchDocumentReference, (despatch) => {
           return {
