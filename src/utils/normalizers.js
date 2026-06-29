@@ -89,37 +89,108 @@ const linesNormalizer = (linesArray) => {
 
 const partyNormalizer = (partyJson) => {
   const party = partyJson.Party;
-  const matchedIdentity = _.find(
-    party.PartyIdentification,
-    (id) => id?.ID?.schemeID === 'TCKN' || id?.ID?.schemeID === 'VKN' || id?.ID?.schemeID === 'PARTYTYPE',
-  );
-  const ID = matchedIdentity?.ID || {};
-  const scheme = ID?.schemeID;
-  const normalizedParty = {
-    name:
-      scheme === 'TCKN'
-        ? `${party.Person?.FirstName?.val}${party.Person?.MiddleName?.val ? ` ${party.Person?.MiddleName?.val}` : ''} ${party.Person?.FamilyName?.val}`
-        : party.PartyName?.Name?.val,
-    vkn_tckn: ['TCKN', 'VKN'].includes(scheme) ? ID?.val : party.PartyLegalEntity?.[0]?.CompanyID?.val,
-    tax_office: party.PartyTaxScheme?.TaxScheme?.Name?.val,
-    address: `${party.PostalAddress?.StreetName?.val} ${party.PostalAddress?.BuildingName?.val} ${party.PostalAddress?.BuildingNumber ? party.PostalAddress?.BuildingNumber[0]?.val : null} ${party.PostalAddress?.Room?.val}`,
-    city: party.PostalAddress?.CityName?.val,
-    city_subdivision: party.PostalAddress?.CitySubdivisionName?.val,
-    country: party.PostalAddress?.Country.Name?.val,
-    postal_zone: party.PostalAddress?.PostalZone?.val,
-    email: party.Contact?.ElectronicMail?.val,
-    phone_number: party.Contact?.Telephone?.val,
-    additional_identifiers:
-      _.map(party.PartyIdentification, (id) => {
-        if (id?.ID?.schemeID !== 'TCKN' && id?.ID?.schemeID !== 'VKN') {
-          return {
-            scheme: id?.ID?.schemeID,
-            value: id?.ID?.val,
-          };
-        }
-      }).filter((id) => id !== undefined) || [],
+
+  const getVal = (x) => {
+    if (!x) return '';
+    if (typeof x === 'object') return x.val || x['#text'] || '';
+    return String(x);
   };
-  return normalizedParty;
+
+  const parsePartyDetails = (p) => {
+    const matchedIdentity = _.find(
+      p.PartyIdentification,
+      (id) => id?.ID?.schemeID === 'TCKN' || id?.ID?.schemeID === 'VKN' || id?.ID?.schemeID === 'PARTYTYPE',
+    );
+    const ID = matchedIdentity?.ID || {};
+    const scheme = ID?.schemeID;
+
+    let street = p.PostalAddress?.StreetName?.val || '';
+    let bName = p.PostalAddress?.BuildingName?.val || '';
+    let bNumber = '';
+    if (p.PostalAddress?.BuildingNumber) {
+      if (Array.isArray(p.PostalAddress.BuildingNumber)) {
+        bNumber = p.PostalAddress.BuildingNumber[0]?.val || '';
+      } else {
+        bNumber = p.PostalAddress.BuildingNumber.val || p.PostalAddress.BuildingNumber || '';
+      }
+    }
+    let room = p.PostalAddress?.Room?.val || '';
+
+    let baseAddress = [street, bName, bNumber, room]
+      .map(x => String(x || '').replace(/undefined|null/gi, '').trim())
+      .filter(Boolean)
+      .join(' ');
+
+    const city = String(p.PostalAddress?.CityName?.val || '').trim();
+    const sub = String(p.PostalAddress?.CitySubdivisionName?.val || '').trim();
+    const extra = [sub, city].filter(Boolean).join('/');
+
+    let finalAddress = baseAddress;
+    if (extra) {
+      const baseLower = baseAddress.toLowerCase();
+      const cityLower = city.toLowerCase();
+      const subLower = sub.toLowerCase();
+
+      const hasCity = city && baseLower.includes(cityLower);
+      const hasSub = sub && baseLower.includes(subLower);
+
+      const extraParts = [];
+      if (sub && !hasSub) extraParts.push(sub);
+      if (city && !hasCity) extraParts.push(city);
+
+      if (extraParts.length > 0) {
+        finalAddress = `${baseAddress} ${extraParts.join('/')}`.trim();
+      }
+    }
+
+    const additionalIdentifiers = _.map(p.PartyIdentification, (id) => {
+      const schemeId = getVal(id?.ID?.schemeID);
+      if (schemeId !== 'TCKN' && schemeId !== 'VKN') {
+        return {
+          scheme: schemeId,
+          value: getVal(id?.ID),
+        };
+      }
+    }).filter((id) => id !== undefined) || [];
+
+    return {
+      name:
+        scheme === 'TCKN'
+          ? `${p.Person?.FirstName?.val}${p.Person?.MiddleName?.val ? ` ${p.Person?.MiddleName?.val}` : ''} ${p.Person?.FamilyName?.val}`
+          : p.PartyName?.Name?.val,
+      vkn_tckn: ['TCKN', 'VKN'].includes(scheme) ? ID?.val : p.PartyLegalEntity?.[0]?.CompanyID?.val,
+      tax_office: p.PartyTaxScheme?.TaxScheme?.Name?.val,
+      address: finalAddress || '',
+      city: p.PostalAddress?.CityName?.val,
+      city_subdivision: p.PostalAddress?.CitySubdivisionName?.val,
+      country: p.PostalAddress?.Country?.Name?.val,
+      postal_zone: p.PostalAddress?.PostalZone?.val,
+      email: p.Contact?.ElectronicMail?.val,
+      phone_number: p.Contact?.Telephone?.val,
+      additional_identifiers: additionalIdentifiers,
+    };
+  };
+
+  const normalized = parsePartyDetails(party);
+
+  if (party.AgentParty) {
+    const agentNormalized = parsePartyDetails(party.AgentParty);
+    if (agentNormalized.address) normalized.address = agentNormalized.address;
+    if (agentNormalized.city) normalized.city = agentNormalized.city;
+    if (agentNormalized.city_subdivision) normalized.city_subdivision = agentNormalized.city_subdivision;
+    if (agentNormalized.postal_zone) normalized.postal_zone = agentNormalized.postal_zone;
+
+    agentNormalized.additional_identifiers.forEach((agentId) => {
+      const existing = normalized.additional_identifiers.find(id => id.scheme === agentId.scheme);
+      if (existing) {
+        existing.value = agentId.value;
+      } else {
+        normalized.additional_identifiers.push(agentId);
+      }
+    });
+  }
+
+  return normalized;
 };
 
 module.exports = {
